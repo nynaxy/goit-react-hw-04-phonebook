@@ -1,85 +1,64 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
-import "./Style.css";
 
-class ContactForm extends Component {
-  state = {
-    name: "",
-    number: "",
-    error: "",
-  };
+function ContactForm({ addContact }) {
+  const [name, setName] = useState("");
+  const [number, setNumber] = useState("");
 
-  // Obsługa zmiany wartości w polach formularza
-  handleChange = (e) => {
-    const { name, value } = e.target;
-    this.setState({ [name]: value });
-  };
-
-  // Obsługa przesłania formularza
-  handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const { name, number } = this.state;
-
-    // Walidacja pola 'name'
-    const namePattern = /^[a-zA-Z]+\s[a-zA-Z]+$/;
-    if (!namePattern.test(name)) {
-      this.setState({
-        error: "Imię musi zawierać imię i nazwisko oddzielone spacją.",
-      });
+    if (!validateName(name)) {
+      alert("Please enter both first and last name.");
       return;
     }
-
-    // Walidacja pola 'number'
-    const phoneNumberPattern = /^[0-9+\-()\s]*$/;
-    if (!phoneNumberPattern.test(number)) {
-      this.setState({
-        error: "Numer może zawierać tylko cyfry, spacje, myślniki i nawiasy.",
-      });
+    if (!validateNumber(number)) {
+      alert(
+        "Please enter a valid phone number. Only digits, spaces, and underscores are allowed.",
+      );
       return;
     }
-
-    // Wyczyszczenie błędu i przesłanie formularza
-    this.setState({ error: "" });
-    this.props.onSubmit({ name, number });
-    this.setState({ name: "", number: "" });
+    addContact(name, number);
+    setName("");
+    setNumber("");
   };
 
-  render() {
-    const { name, number, error } = this.state;
+  const validateName = (name) => {
+    const parts = name.trim().split(" ");
+    return parts.length >= 2 && parts.every((part) => part);
+  };
 
-    return (
-      <div className="ContactForm">
-        <form className="ContactForm-form" onSubmit={this.handleSubmit}>
-          <label>
-            Name
-            <input
-              type="text"
-              name="name"
-              value={name}
-              onChange={this.handleChange}
-              required
-            />
-          </label>
-          <label>
-            Number
-            <input
-              type="text"
-              name="number"
-              value={number}
-              onChange={this.handleChange}
-              required
-            />
-          </label>
-          {error && <p className="error">{error}</p>}
-          <button type="submit">Add contacts</button>
-        </form>
+  const validateNumber = (number) => {
+    const numberPattern = /^[0-9 -]+$/;
+    return numberPattern.test(number);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label>Name</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
       </div>
-    );
-  }
+      <div>
+        <label>Number</label>
+        <input
+          type="tel"
+          value={number}
+          onChange={(e) => setNumber(e.target.value)}
+          required
+        />
+      </div>
+      <button type="submit">Add Contact</button>
+    </form>
+  );
 }
 
 ContactForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
+  addContact: PropTypes.func.isRequired,
 };
 
 export default ContactForm;
